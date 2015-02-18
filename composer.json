@@ -1,0 +1,23 @@
+{
+    "name": "ruysu/resourceful",
+    "description": "Resourceful controllers and repositories made simple",
+    "authors": [
+        {
+            "name": "Gerardo Gómez",
+            "email": "code@gerardo.im"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "4.2.*",
+        "ruysu/forms": "0.1.*",
+        "anlutro/l4-repository": "0.7.8",
+        "anlutro/l4-controller": "0.3.4"
+    },
+    "autoload": {
+        "psr-0": {
+            "Ruysu\\Resourceful": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
