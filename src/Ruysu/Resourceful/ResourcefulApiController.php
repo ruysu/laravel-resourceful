@@ -1,63 +1,59 @@
 <?php namespace Ruysu\Resourceful;
 
-abstract class ResourcefulApiController extends ResourcefulControllerAbstract implements ResourcefulControllerInterface {
+abstract class ResourcefulApiController extends ResourcefulControllerAbstract {
+	protected $resource_key = 'resource';
+
 	public function index() {
-		$resources = $this->repository->index();
-		$this->indexing($resources);
+		$resources = parent::index();
 		return $this->jsonResponse($resources);
 	}
 
 	public function create() {
-		$resource = $this->repository->getNew();
-		$this->creating($resource);
-		$this->composing($resource);
-		return $this->jsonResponse($resource);
+		$resource = parent::create();
+		$form = $this->form->render();
+
+		return $this->jsonResponse(compact('form'));
 	}
 
 	public function store() {
-		$input = $this->input();
+		$resource = parent::store();
 
-		$response = array('success' => false, 'errors' => true);
-
-		if ($resource = $this->repository->create($input)) {
-			$response['success'] = true;
-		}
-		else {
-			$response['errors'] = $this->repository->getErrors();
-		}
-
-		return $this->jsonResponse($response);
+		return $this->jsonResponse(array(
+			'success' => (bool) $resource,
+			'errors' => $resource ? false : $this->repository->getErrors(),
+			$this->resource_key => $resource
+		));
 	}
 
 	public function show() {
-		$resource = $this->find($params = func_get_args());
+		$resource = parent::show();
+
 		return $this->jsonResponse($resource);
 	}
 
 	public function edit() {
-		$resource = $this->find($params = func_get_args());
-		$this->editing($resource);
-		$this->composing($resource);
-		return $this->show($resource);
+		$resource = parent::edit();
+		$form = $this->form->render();
+
+		return $this->jsonResponse(compact('form'));
 	}
 
 	public function update() {
-		$resource = $this->find($params = func_get_args());
-		$input = array_merge($resource->toArray(), $this->input());
+		$updated = (bool) parent::update();
 
-		$response = array('success' => false, 'errors' => true);
-
-		if ($this->repository->update($resource, $input)) {
-			$response['success'] = true;
-		}
-		else {
-			$response['errors'] = $this->repository->getErrors();
-		}
-
-		return $this->jsonResponse($response);
+		return $this->jsonResponse(array(
+			'success' => (bool) $updated,
+			'errors' => $updated ? false : $this->repository->getErrors(),
+			$this->resource_key => $this->resource
+		));
 	}
 
 	public function destroy() {
-		$resource = $this->find($params = func_get_args());
+		$destroyed = parent::destroy();
+
+		return $this->jsonResponse(array(
+			'success' => (bool) $destroyed,
+			'errors' => $destroyed ? false : $this->repository->getErrors()
+		));
 	}
 }
