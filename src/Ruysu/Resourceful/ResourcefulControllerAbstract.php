@@ -1,7 +1,6 @@
 <?php namespace Ruysu\Resourceful;
 
 use anlutro\LaravelController\Controller;
-use Ruysu\Forms\FormBuilder;
 use Route;
 use Input;
 use File;
@@ -35,7 +34,7 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 	/**
 	 * @param \Ruysu\Resourceful\ResourcefulRepositoryInterface $repository
 	 */
-	public function __construct(ResourcefulRepositoryInterface $repository, FormBuilder $form = null) {
+	public function __construct(ResourcefulRepositoryInterface $repository, ResourcefulFormBuilder $form = null) {
 		$this->repository = $repository;
 		$this->form = $form;
 		$this->parameters = Route::current()->parameters();
@@ -143,7 +142,7 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 	}
 
 	protected function uploadFiles() {
-		$files = array_only(Input::file(), $this->files);
+		$files = array_only($this->fileInput(null), $this->files);
 
 		foreach ($files as $key => $file) {
 			if ($file && $file->isValid()) {
