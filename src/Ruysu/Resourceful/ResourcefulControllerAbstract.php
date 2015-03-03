@@ -70,9 +70,7 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 		method_exists($this, 'saving') && $this->saving();
 
 		if($this->valid('create')) {
-			$this->uploadFiles();
-
-			$resource = $this->repository->create($this->input, false);
+			$resource = $this->repository->create($this->input);
 
 			method_exists($this, 'stored') && $this->stored($resource);
 			method_exists($this, 'saved') && $this->saved($resource);
@@ -116,8 +114,7 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 		method_exists($this, 'saving') && $this->saving($resource);
 
 		if($this->valid('update')) {
-			$this->uploadFiles();
-			$updated = $this->repository->update($resource, $this->input, false);
+			$updated = $this->repository->update($resource, $this->input);
 
 			method_exists($this, 'updated') && $this->updated($resource);
 			method_exists($this, 'saved') && $this->saved($resource);
@@ -139,37 +136,6 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 		method_exists($this, 'destroyed') && $this->destroyed($resource);
 
 		return $destroyed;
-	}
-
-	protected function uploadFiles() {
-		$files = array_only($this->fileInput(null), $this->files);
-
-		foreach ($files as $key => $file) {
-			if ($file && $file->isValid()) {
-				$extension = $file->getClientOriginalExtension();
-
-				if (method_exists($this, $method = camel_case("upload_{$key}_file"))) {
-					$this->$method($file);
-				}
-				else {
-					$uploads_path = $this->uploadPath(public_path('uploads'));
-					$filename = microtime(true) . ".{$extension}";
-					$file->move($uploads_path, $filename);
-					$this->input[$key] = $filename;
-				}
-			}
-			else {
-				unset($this->input[$key]);
-			}
-		}
-	}
-
-	protected function uploadPath($path) {
-		if (!is_dir($path)) {
-			File::makeDirectory($path, 0755, true);
-		}
-
-		return $path;
 	}
 
 	protected function find() {
