@@ -30,6 +30,11 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 	protected $resource;
 	protected $input;
 	protected $files = [];
+	protected $index_method = 'index';
+	protected $create_method = 'create';
+	protected $update_method = 'update';
+	protected $delete_method = 'delete';
+	protected $find_method = 'findByKey';
 
 	/**
 	 * @param \Ruysu\Resourceful\ResourcefulRepositoryInterface $repository
@@ -69,14 +74,12 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 		method_exists($this, 'storing') && $this->storing();
 		method_exists($this, 'saving') && $this->saving();
 
-		if($this->valid('create')) {
-			$resource = $this->repository->create($this->input);
+		$resource = call_user_func([$this->repository, $this->create_method], $this->input);
+		// $resource = $this->repository->create($this->input);
 
+		if ($resource) {
 			method_exists($this, 'stored') && $this->stored($resource);
 			method_exists($this, 'saved') && $this->saved($resource);
-		}
-		else {
-			$resource = null;
 		}
 
 		return $resource;
@@ -113,14 +116,12 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 		method_exists($this, 'updating') && $this->updating($resource);
 		method_exists($this, 'saving') && $this->saving($resource);
 
-		if($this->valid('update')) {
-			$updated = $this->repository->update($resource, $this->input);
+		$updated = call_user_func([$this->repository, $this->update_method], $resource, $this->input);
+		// $updated = $this->repository->update($resource, $this->input);
 
+		if($updated) {
 			method_exists($this, 'updated') && $this->updated($resource);
 			method_exists($this, 'saved') && $this->saved($resource);
-		}
-		else {
-			$updated = false;
 		}
 
 		return $updated ? $resource : false;
@@ -131,9 +132,12 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 
 		method_exists($this, 'destroying') && $this->destroying($resource);
 
-		$destroyed = $this->repository->delete($resource);
+		$destroyed = call_user_func([$this->repository, $this->delete_method], $resource, $this->input);
+		// $destroyed = $this->repository->delete($resource);
 
-		method_exists($this, 'destroyed') && $this->destroyed($resource);
+		if ($destroyed) {
+			method_exists($this, 'destroyed') && $this->destroyed($resource);
+		}
 
 		return $destroyed;
 	}
@@ -141,7 +145,8 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 	protected function find() {
 		$resource_id = end($this->parameters);
 
-		$this->resource = $this->repository->findByKey($resource_id);
+		$this->resource = call_user_func([$this->repository, $this->find_method], $resource_id);
+		// $this->resource = $this->repository->findByKey($resource_id);
 
 		if (!$this->resource) {
 			throw new NotFoundException;
@@ -162,5 +167,16 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 		}
 
 		return !$validator || ($validator && $validator->valid($action, $this->input));
+	}
+
+	protected function input($key = null) {
+		if (is_null($key) || is_array($key)) {
+			return array_filter(parent::input($key), function ($value) {
+				return !is_null($value);
+			});
+		}
+		else {
+			return parent::input($key);
+		}
 	}
 }

@@ -2,7 +2,11 @@
 
 trait ResourcefulRepositoryTrait {
 	public function index(){
-		return $this->performQuery($this->newQuery(), true);
+		return $this->perform('index', $this->newQuery(), false, false);
+	}
+
+	public function performIndex($query) {
+		return $this->perform('query', $query, true, false);
 	}
 
 	protected function performUpdate($user, array $attributes) {
