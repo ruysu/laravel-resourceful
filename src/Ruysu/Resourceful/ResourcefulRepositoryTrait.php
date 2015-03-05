@@ -1,5 +1,7 @@
 <?php namespace Ruysu\Resourceful;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 trait ResourcefulRepositoryTrait {
 	public function index(){
 		return $this->perform('index', $this->newQuery(), false, false);
