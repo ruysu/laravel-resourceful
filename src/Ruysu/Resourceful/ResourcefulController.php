@@ -51,6 +51,6 @@ abstract class ResourcefulController extends ResourcefulControllerAbstract {
 	public function destroy() {
 		$params = $this->parameters;
 		$destroyed = parent::destroy();
-		$this->redirect('index', $params)->with('notice', ['success', 'Resource deleted successfully']);
+		return $this->redirect('index', $params)->with('notice', ['success', 'Resource deleted successfully']);
 	}
 }

@@ -46,7 +46,7 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 	}
 
 	public function index() {
-		$resources = $this->repository->index();
+		$resources = call_user_func([$this->repository, $this->index_method], $this->input(['search', 'role']));
 
 		method_exists($this, 'indexing') && $this->indexing($resources);
 
@@ -69,7 +69,7 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 	}
 
 	public function store() {
-		$this->input = $this->input();
+		$this->input = $this->form->getInput();
 
 		method_exists($this, 'storing') && $this->storing();
 		method_exists($this, 'saving') && $this->saving();
@@ -111,7 +111,7 @@ abstract class ResourcefulControllerAbstract extends Controller implements Resou
 
 	public function update() {
 		$resource = $this->find();
-		$this->input = $this->input();
+		$this->input = $this->form->getInput();
 
 		method_exists($this, 'updating') && $this->updating($resource);
 		method_exists($this, 'saving') && $this->saving($resource);
