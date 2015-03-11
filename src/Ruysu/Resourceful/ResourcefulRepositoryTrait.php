@@ -23,22 +23,26 @@ trait ResourcefulRepositoryTrait {
 		return parent::performCreate($user, $attributes);
 	}
 
-	protected function uploadFiles(&$attributes) {
-		$files = array_filter($attributes, function($file) {
-			return $file instanceof UploadedFile;
+	protected function uploadFiles(&$attributes)
+	{
+		$files = array_filter($attributes, function($file)
+		{
+			return $file instanceof UploadedFile || is_null($file);
 		});
 
 		foreach ($files as $key => $file) {
-			$method = camel_case("upload_{$key}_file");
+			if ($file && $file->isValid()) {
+				$method = camel_case("upload_{$key}_file");
 
-			if (method_exists($this, $method)) {
-				$attributes[$key] = $this->$method($file);
-			}
-			else {
-				$path = public_path('uploads');
-				!is_dir($path) && mkdir($path, 0755, true);
-				$file->move($path);
-				$attributes[$key] = asset('uploads/' . $file->getClientOriginalName());
+				if (method_exists($this, $method)) {
+					$attributes[$key] = $this->$method($file);
+				}
+				else {
+					$path = public_path('uploads/users');
+					!is_dir($path) && mkdir($path, 0755, true);
+					$file->move($path, $file->getClientOriginalName());
+					$attributes[$key] = asset('uploads/users/' . $file->getClientOriginalName());
+				}
 			}
 		}
 		unset($key, $file);
